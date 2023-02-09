@@ -38,11 +38,24 @@ public class UsersController : ControllerBase
     }
 
     [Authorize(Role.Admin, Role.User)]
-    [HttpGet]
+    [HttpGet("GetPaginated")]
     public ActionResult<PaginationDTO<User>> GetAll(int page)
     {
         var users = _userService.GetAll(page);
         return Ok(users);
+    }
+
+    [Authorize(Role.Admin, Role.User)]
+    [HttpGet("GetAllUsers")]
+    public async Task<ActionResult<List<User>>> Get()
+    {
+        var result = _userService.Get();
+
+        if (result is null)
+        {
+            return NotFound("No User Found");
+        }
+        return Ok(result);
     }
 
     [HttpGet("{id:int}")]

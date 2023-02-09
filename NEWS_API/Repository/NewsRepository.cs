@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using News_API.FilteringSorting;
 using News_API.Interfaces;
 using News_API.Models;
 using News_API.Pagination;
@@ -9,6 +10,9 @@ namespace News_API.Repository
     public class NewsRepository : INewsRepository
     {
         PaginationResult _paginationResult = new PaginationResult();
+        Filtering _filtering = new Filtering();
+        Sorting _sorting= new Sorting();
+
         private readonly NewsApiContext _context;
         public NewsRepository(NewsApiContext context)
         {
@@ -41,7 +45,8 @@ namespace News_API.Repository
 
         public PaginationDTO<News> Get(int page)
         {
-            var result = _paginationResult.GetPagination(page, _context.News.ToList());
+            var query = _context.News.AsQueryable();
+            var result = _paginationResult.GetPagination(page, query);
             _context.SaveChanges();
             return result;
         }
@@ -75,6 +80,22 @@ namespace News_API.Repository
 
             _context.SaveChanges();
             return _News;
+        }
+
+        public List<News> GetAll()
+        {
+            _context.SaveChanges();
+            return _context.News.ToList();
+        }
+
+        public PaginationDTO<News> GetFilterAndSorting(int page, string userName, string sortOrder)
+        {
+            var query = _context.News.AsQueryable();
+            var filter = _filtering.GetFiltering(userName, query);
+            var sort = _sorting.GetSorting(sortOrder, filter.AsQueryable());
+            var result = _paginationResult.GetPagination(page, sort.AsQueryable());
+            _context.SaveChanges();
+            return result;
         }
 
         //        string INewsRepository.DeleteBookmarks(int id, string email)

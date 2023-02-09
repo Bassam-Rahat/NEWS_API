@@ -18,10 +18,33 @@ namespace News_API.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("GetAllNews")]
+        [HttpGet("GetPaginatedNews")]
         public async Task<ActionResult<PaginationDTO<News>>> Get(int page)
         {
             var result = NewsRepository.Get(page);
+            return Ok(result);
+
+        }
+
+        [AllowAnonymous]
+        [HttpGet("GetFiltering&Sorting")]
+        public async Task<ActionResult<PaginationDTO<News>>> GetFilterAndSorting(int page, string userName, string sortOrder)
+        {
+            var result = NewsRepository.GetFilterAndSorting(page, userName, sortOrder);
+            return Ok(result);
+
+        }
+
+        [AllowAnonymous]
+        [HttpGet("GetAllNews")]
+        public async Task<ActionResult<List<News>>> GetAll()
+        {
+            var result = NewsRepository.GetAll();
+
+            if (result is null)
+            {
+                return NotFound("No News Found");
+            }
             return Ok(result);
 
         }

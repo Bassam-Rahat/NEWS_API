@@ -1,4 +1,5 @@
 ﻿using News_API.Authorization;
+using News_API.FilteringSorting;
 using News_API.Interfaces;
 using News_API.Models;
 using News_API.Pagination;
@@ -9,6 +10,9 @@ namespace News_API.Repository
     public class BookmarkRepository : IBookmarkRepository
     {
         PaginationResult _paginationResult = new PaginationResult();
+        Filtering _filtering = new Filtering();
+        Sorting _sorting = new Sorting();
+
         private readonly NewsApiContext _context;
         private IJwtUtils _jwtUtils;
         public BookmarkRepository(NewsApiContext context, IJwtUtils jwtutils)
@@ -29,7 +33,7 @@ namespace News_API.Repository
             .Where(n => bookmarkedIds.Contains(n.Id))
             .ToList();
 
-            var result = _paginationResult.GetPagination(page, newsArticles);
+            var result = _paginationResult.GetPagination(page, newsArticles.AsQueryable());
 
             if (result is null)
             {
@@ -74,7 +78,41 @@ namespace News_API.Repository
             return ("Bookmark Deleted Successfully");
         }
 
+        public List<News> GetAll(int userId)
+        {
+            var bookmarkedIds = _context.BookMarks
+                       .Where(b => b.UserId == userId)
+                       .Select(b => b.NewsId)
+                       .ToList();
 
+            var newsArticles = _context.News
+            .Where(n => bookmarkedIds.Contains(n.Id))
+            .ToList();
 
+            if (bookmarkedIds is null || newsArticles is null)
+            {
+                return null;
+            }
+            return (newsArticles);
+        }
+
+        public PaginationDTO<News> GetFilterAndSorting(int page, string userName, string sortOrder, int userId)
+        {
+            var bookmarkedIds = _context.BookMarks
+            .Where(b => b.UserId == userId)
+            .Select(b => b.NewsId)
+            .ToList();
+
+            var newsArticles = _context.News
+            .Where(n => bookmarkedIds.Contains(n.Id))
+            .ToList();
+
+            var query = newsArticles.AsQueryable();
+            var filter = _filtering.GetFiltering(userName, query);
+            var sort = _sorting.GetSorting(sortOrder, filter.AsQueryable());
+            var result = _paginationResult.GetPagination(page, sort.AsQueryable());
+            _context.SaveChanges();
+            return result;
+        }
     }
 }

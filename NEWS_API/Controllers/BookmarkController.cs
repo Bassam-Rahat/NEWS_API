@@ -5,6 +5,7 @@ using News_API.Entities;
 using News_API.Interfaces;
 using News_API.Models;
 using News_API.Pagination;
+using News_API.Repository;
 using System.Security.Claims;
 using System.Security.Principal;
 
@@ -37,11 +38,35 @@ namespace News_API.Controllers
         }
 
         [Authorize(Role.User)]
-        [HttpGet("SeeAllBookmarks")]
+        [HttpGet("SeeAllPaginatedBookmarks")]
         public async Task<ActionResult<PaginationDTO<News>>> Get(int page)
         {
             var currentUser = (User)HttpContext.Items["User"];
             var result = _bookmarkRepository.Get(currentUser.Id, page);
+
+            if (result is null)
+            {
+                return NotFound("No News Found");
+            }
+            return Ok(result);
+        }
+
+        [Authorize(Role.User)]
+        [HttpGet("GetFiltering&Sorting")]
+        public async Task<ActionResult<PaginationDTO<News>>> GetFilterAndSorting(int page, string userName, string sortOrder)
+        {
+            var currentUser = (User)HttpContext.Items["User"];
+            var result = _bookmarkRepository.GetFilterAndSorting(page, userName, sortOrder, currentUser.Id);
+            return Ok(result);
+
+        }
+
+        [Authorize(Role.User)]
+        [HttpGet("SeeAllBookmarks")]
+        public async Task<ActionResult<List<News>>> GetAll()
+        {
+            var currentUser = (User)HttpContext.Items["User"];
+            var result = _bookmarkRepository.GetAll(currentUser.Id);
 
             if (result is null)
             {

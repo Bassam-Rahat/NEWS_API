@@ -40,7 +40,12 @@ public class RegisterRepository : IRegisterRepository
 
     public PaginationDTO<User> GetAll(int page)
     {
-        var result = _paginationResult.GetPagination<User>(page, _context.Users.ToList());
+        var result = _paginationResult.GetPagination<User>(page, _context.Users.AsQueryable());
+        return result;
+    }
+    public List<User> GetAll()
+    {
+        var result =  _context.Users.ToList();
         return result;
     }
 
@@ -74,5 +79,15 @@ public class RegisterRepository : IRegisterRepository
 
         _context.SaveChanges();
         return ("User Deleted Successfully!");
+    }
+
+    public List<User> Get()
+    {
+        if (_context.Users is null)
+        {
+            return null;
+        }
+        _context.SaveChanges();
+        return (_context.Users.ToList());
     }
 }
