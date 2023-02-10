@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using News_API.FilteringSorting;
 using News_API.Interfaces;
 using News_API.Models;
 using News_API.Pagination;
+using Newtonsoft.Json.Linq;
 using System.Data;
 
 namespace News_API.Repository
@@ -11,7 +13,7 @@ namespace News_API.Repository
     {
         PaginationResult _paginationResult = new PaginationResult();
         Filtering _filtering = new Filtering();
-        Sorting _sorting= new Sorting();
+        Sorting<News> _sorting= new Sorting<News>();
 
         private readonly NewsApiContext _context;
         public NewsRepository(NewsApiContext context)
@@ -88,11 +90,11 @@ namespace News_API.Repository
             return _context.News.ToList();
         }
 
-        public PaginationDTO<News> GetFilterAndSorting(int page, string userName, string sortOrder)
+        public PaginationDTO<News> GetFilterAndSorting(int page, string columnName, string find, string sortOrder)
         {
             var query = _context.News.AsQueryable();
-            var filter = _filtering.GetFiltering(userName, query);
-            var sort = _sorting.GetSorting(sortOrder, filter.AsQueryable());
+            var filter = _filtering.GetFiltering<News>(columnName, find, query);
+            var sort = _sorting.GetSorting(sortOrder,columnName, filter.AsQueryable());
             var result = _paginationResult.GetPagination(page, sort.AsQueryable());
             _context.SaveChanges();
             return result;

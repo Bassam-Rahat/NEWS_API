@@ -46,6 +46,14 @@ public class UsersController : ControllerBase
     }
 
     [Authorize(Role.Admin, Role.User)]
+    [HttpGet("GetFilteringandSorting")]
+    public ActionResult<PaginationDTO<User>> GetFilteringandSorting(int page, string columnName, string find, string sortOrder)
+    {
+        var users = _userService.GetFilteringandSorting(page, columnName, find, sortOrder);
+        return Ok(users);
+    }
+
+    [Authorize(Role.Admin, Role.User)]
     [HttpGet("GetAllUsers")]
     public async Task<ActionResult<List<User>>> Get()
     {

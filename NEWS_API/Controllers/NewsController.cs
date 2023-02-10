@@ -28,9 +28,9 @@ namespace News_API.Controllers
 
         [AllowAnonymous]
         [HttpGet("GetFiltering&Sorting")]
-        public async Task<ActionResult<PaginationDTO<News>>> GetFilterAndSorting(int page, string userName, string sortOrder)
+        public async Task<ActionResult<PaginationDTO<News>>> GetFilterAndSorting(int page, string columnName, string find, string sortOrder)
         {
-            var result = NewsRepository.GetFilterAndSorting(page, userName, sortOrder);
+            var result = NewsRepository.GetFilterAndSorting(page, columnName, find, sortOrder);
             return Ok(result);
 
         }

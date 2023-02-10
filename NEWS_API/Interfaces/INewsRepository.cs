@@ -5,7 +5,7 @@ namespace News_API.Interfaces
     public interface INewsRepository
     {
         PaginationDTO<News> Get(int page);
-        PaginationDTO<News> GetFilterAndSorting(int page, string userName, string sortOrder);
+        PaginationDTO<News> GetFilterAndSorting(int page, string columnName, string find, string sortOrder);
         List<News> GetAll();
         News GetById(int id);
         List<News> Add(News news);

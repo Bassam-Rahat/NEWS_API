@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.Options;
 using News_API.Authorization;
+using News_API.FilteringSorting;
 using News_API.Helpers;
 using News_API.Interfaces;
 using News_API.Models;
@@ -13,6 +14,8 @@ using System.Collections.Generic;
 public class RegisterRepository : IRegisterRepository
 {
     PaginationResult _paginationResult = new PaginationResult();
+    Filtering _filtering = new Filtering();
+    Sorting<User> _sorting = new Sorting<User>();
 
     private NewsApiContext _context;
     private IJwtUtils _jwtUtils;
@@ -89,5 +92,15 @@ public class RegisterRepository : IRegisterRepository
         }
         _context.SaveChanges();
         return (_context.Users.ToList());
+    }
+
+    public PaginationDTO<User> GetFilteringandSorting(int page, string columnName, string find, string sortOrder)
+    {
+        var query = _context.Users.AsQueryable();
+        var filter = _filtering.GetFiltering<User>(columnName, find, query);
+        var sort = _sorting.GetSorting(sortOrder, columnName, filter.AsQueryable());
+        var result = _paginationResult.GetPagination(page, sort.AsQueryable());
+        _context.SaveChanges();
+        return result;
     }
 }

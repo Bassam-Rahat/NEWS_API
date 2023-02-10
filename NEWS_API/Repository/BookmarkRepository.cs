@@ -11,18 +11,21 @@ namespace News_API.Repository
     {
         PaginationResult _paginationResult = new PaginationResult();
         Filtering _filtering = new Filtering();
-        Sorting _sorting = new Sorting();
+        Sorting<News> _sorting = new Sorting<News>();
 
         private readonly NewsApiContext _context;
         private IJwtUtils _jwtUtils;
-        public BookmarkRepository(NewsApiContext context, IJwtUtils jwtutils)
+        private readonly IIdentityService _identityService;
+        public BookmarkRepository(NewsApiContext context, IJwtUtils jwtutils, IIdentityService identityService)
         {
             _context = context;
             _jwtUtils = jwtutils;
+            _identityService = identityService;
         }
 
-        public PaginationDTO<News> Get(int userId, int page)
+        public PaginationDTO<News> Get(int page)
         {
+            int userId = _identityService.GetUserId().Value;
             //var result = _context.Bookmarks.Include(e => e.UserBookmarkNewsNo).Include
             var bookmarkedIds = _context.BookMarks
             .Where(b => b.UserId == userId)
@@ -42,9 +45,11 @@ namespace News_API.Repository
             return (result);
         }
 
-        string IBookmarkRepository.Save(int id, int userId)
+        string IBookmarkRepository.Save(int id)
         {
             BookMark bookmark = new BookMark();
+
+            int userId = _identityService.GetUserId().Value;
 
             var news = _context.News.Where(x => x.Id == id);
             var user = _context.Users.FirstOrDefault(x => x.Id == userId);
@@ -63,8 +68,9 @@ namespace News_API.Repository
             return ("Bookmark Saved Successfully!");
         }
 
-        string IBookmarkRepository.Delete(int id, int userId)
+        string IBookmarkRepository.Delete(int id)
         {
+            int userId = _identityService.GetUserId().Value;
             var user = _context.BookMarks.Where(x => x.UserId == userId && x.NewsId == id).FirstOrDefault();
 
             if (user is null)
@@ -78,8 +84,10 @@ namespace News_API.Repository
             return ("Bookmark Deleted Successfully");
         }
 
-        public List<News> GetAll(int userId)
+        public List<News> GetAll()
         {
+            int userId = _identityService.GetUserId().Value;
+
             var bookmarkedIds = _context.BookMarks
                        .Where(b => b.UserId == userId)
                        .Select(b => b.NewsId)
@@ -96,8 +104,10 @@ namespace News_API.Repository
             return (newsArticles);
         }
 
-        public PaginationDTO<News> GetFilterAndSorting(int page, string userName, string sortOrder, int userId)
+        public PaginationDTO<News> GetFilterAndSorting(int page, string columnName, string find, string sortOrder)
         {
+            int userId = _identityService.GetUserId().Value;
+
             var bookmarkedIds = _context.BookMarks
             .Where(b => b.UserId == userId)
             .Select(b => b.NewsId)
@@ -107,10 +117,9 @@ namespace News_API.Repository
             .Where(n => bookmarkedIds.Contains(n.Id))
             .ToList();
 
-            var query = newsArticles.AsQueryable();
-            var filter = _filtering.GetFiltering(userName, query);
-            var sort = _sorting.GetSorting(sortOrder, filter.AsQueryable());
-            var result = _paginationResult.GetPagination(page, sort.AsQueryable());
+            var filter = _filtering.GetFiltering<News>(columnName, find, newsArticles.AsQueryable());
+            var sort = _sorting.GetSorting(sortOrder,columnName, filter.AsQueryable());
+            var result = _paginationResult.GetPagination(page, filter.AsQueryable());
             _context.SaveChanges();
             return result;
         }

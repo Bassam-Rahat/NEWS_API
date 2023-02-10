@@ -27,8 +27,7 @@ namespace News_API.Controllers
         [HttpPost("SaveBookmarkNews")]
         public async Task<ActionResult<string>> Save(int id)
         {
-            var currentUser = (User)HttpContext.Items["User"];
-            var result = _bookmarkRepository.Save(id, currentUser.Id);
+            var result = _bookmarkRepository.Save(id);
 
             if (result is null)
             {
@@ -41,8 +40,7 @@ namespace News_API.Controllers
         [HttpGet("SeeAllPaginatedBookmarks")]
         public async Task<ActionResult<PaginationDTO<News>>> Get(int page)
         {
-            var currentUser = (User)HttpContext.Items["User"];
-            var result = _bookmarkRepository.Get(currentUser.Id, page);
+            var result = _bookmarkRepository.Get(page);
 
             if (result is null)
             {
@@ -53,10 +51,9 @@ namespace News_API.Controllers
 
         [Authorize(Role.User)]
         [HttpGet("GetFiltering&Sorting")]
-        public async Task<ActionResult<PaginationDTO<News>>> GetFilterAndSorting(int page, string userName, string sortOrder)
+        public async Task<ActionResult<PaginationDTO<News>>> GetFilterAndSorting(int page, string columnName, string find, string sortOrder)
         {
-            var currentUser = (User)HttpContext.Items["User"];
-            var result = _bookmarkRepository.GetFilterAndSorting(page, userName, sortOrder, currentUser.Id);
+            var result = _bookmarkRepository.GetFilterAndSorting(page, columnName, find, sortOrder);
             return Ok(result);
 
         }
@@ -65,8 +62,7 @@ namespace News_API.Controllers
         [HttpGet("SeeAllBookmarks")]
         public async Task<ActionResult<List<News>>> GetAll()
         {
-            var currentUser = (User)HttpContext.Items["User"];
-            var result = _bookmarkRepository.GetAll(currentUser.Id);
+            var result = _bookmarkRepository.GetAll();
 
             if (result is null)
             {
@@ -79,8 +75,7 @@ namespace News_API.Controllers
         [HttpDelete("DeleteBookmarks")]
         public async Task<ActionResult<string>> Delete(int id)
         {
-            var currentUser = (User)HttpContext.Items["User"];
-            var result = _bookmarkRepository.Delete(id, currentUser.Id);
+            var result = _bookmarkRepository.Delete(id);
 
             if (result is null)
             {

@@ -4,10 +4,10 @@ namespace News_API.Interfaces
 {
     public interface IBookmarkRepository
     {
-        string Delete(int id, int userId);
-        string Save(int id, int userId);
-        PaginationDTO<News> Get(int id, int page);
-        List<News> GetAll(int id);
-        PaginationDTO<News> GetFilterAndSorting(int page, string userName, string sortOrder, int userId);
+        string Delete(int id);
+        string Save(int id);
+        PaginationDTO<News> Get(int page);
+        List<News> GetAll();
+        PaginationDTO<News> GetFilterAndSorting(int page, string columnName, string find, string sortOrder);
     }
 }
